@@ -18,4 +18,4 @@ RUN pip3 install --no-cache-dir -r requirements.txt
 COPY moderation_check.py .
 
 # Set the default command to run the Flask app
-ENTRYPOINT ["bash"]
+# ENTRYPOINT ["bash"]

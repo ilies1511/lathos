@@ -1,43 +1,44 @@
 from openai import OpenAI
 import os
 
+# Initialize OpenAI client
 api_key = os.getenv("OPENAI_API_KEY")
 if not api_key:
     raise ValueError("Please set the OPENAI_API_KEY environment variable.")
-# print("Using OpenAI API key:", api_key)
 client = OpenAI(api_key=api_key)
 
-# try:
-#     # Test the connection by listing available models
-#     response = client.models.list()
-#     print("Connection successful! Available models:")
-#     for model in response:
-#         print(f"- {model.id}")
-# except Exception as e:
-#     print(f"Failed to connect to OpenAI: {e}")
+
+def moderate_text(text: str):
+    """
+    Moderates a text string using the OpenAI moderation endpoint.
+    """
+    response = client.moderations.create(
+        model="omni-moderation-latest",
+        input=[{"type": "text", "text": text}]
+    )
+    return response
 
 
-# completion = client.chat.completions.create(
-#   model="gpt-4o-mini",
-#   store=True,
-#   messages=[
-#     {"role": "user", "content": "write a haiku about ai"}
-#   ]
-# )
+def moderate_image(image_url: str):
+    """
+    Moderates an image URL using the OpenAI moderation endpoint.
+    """
+    response = client.moderations.create(
+        model="omni-moderation-latest",
+        input=[{"type": "image_url", "image_url": {"url": image_url}}]
+    )
+    return response
 
-# print(completion.choices[0].message);
 
-# response = client.responses.create(
-#     model="gpt-4.1",
-#     input="Write a one-sentence bedtime story about a unicorn."
-# )
+if __name__ == "__main__":
+    # Example usage
+    text_to_moderate = "This is some sample text to classify."
+    image_url_to_moderate = "https://www.thesun.co.uk/wp-content/uploads/2025/07/DD-08-07-bull-v2_HERO2.jpg"
 
-# print(response.output_text)
+    text_response = moderate_text(text_to_moderate)
+    print("Text moderation response:")
+    print(text_response)
 
-response = client.moderations.create(
-    model="omni-moderation-2024-09-26",
-    input="you are a stupid idiiot you should die, go kill yourself your bitch",
-)
-
-print(response)
-
+    image_response = moderate_image(image_url_to_moderate)
+    print("Image moderation response:")
+    print(image_response)

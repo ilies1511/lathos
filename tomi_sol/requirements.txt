@@ -3,3 +3,6 @@ flask
 requests
 beautifulsoup4
 python-dotenv
+fastapi
+uvicorn
+pydantic
