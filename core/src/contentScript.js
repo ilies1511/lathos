@@ -1,132 +1,51 @@
-// // contentScript.js
-// // Einfache Content-Skript für kinderfreundliches Filtern von problematischen Begriffen
+const API_KEY= process.env.OPENAI_API_KEY;
 
-// /**
-//  * Konfigurierbare Filterstufe:
-//  *  - "low": nur hartes Filtern
-//  *  - "medium": erweitert um zusätzliche Begriffe
-//  *  - "high": semantischere und umfassendere Liste
-//  */
-// const filterLevel = "medium";  // Ändere auf "low" | "medium" | "high"
+(async function moderateAndBlurPage() {
+	let text = document.body.innerText.replace(/[\n\r\t]+/g, ' ').replace(/\s+/g, ' ').trim();
 
-// // Begriffslisten je nach Filterstufe
-// const filterLists = {
-// 	low: ["kill", "blood"],
-// 	medium: ["kill", "blood", "drugs"],
-// 	high: ["kill", "blood", "drugs", "violence", "sex"]
-// };
+	if (!text || text.length < 20) return;
 
-// // Aktive Blacklist ermitteln
-// const blacklist = filterLists[filterLevel] || [];
-// // RegEx für Wortgrenzen (case-insensitive)
-// const pattern = new RegExp(`\\b(${blacklist.join("|")})\\b`, "gi");
-
-// // CSS für Hervorhebung & Tooltip injizieren
-// const style = document.createElement("style");
-// style.textContent = `
-// .csa-filter {
-//   background-color: rgba(255, 255, 0, 0.4);
-//   border-radius: 2px;
-//   cursor: help;
-// }
-// `;
-// document.head.appendChild(style);
-
-// /**
-//  * Scannt Textknoten unter dem angegebenen Root und ersetzt Treffer
-//  */
-// function scanAndReplace(root = document.body) {
-// 	const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null, false);
-// 	let node;
-// 	const nodesToReplace = [];
-
-// 	// Textknoten sammeln, die Treffer enthalten
-// 	while ((node = walker.nextNode())) {
-// 		const text = node.nodeValue;
-// 		if (!text.trim()) continue;
-// 		if (pattern.test(text)) {
-// 			nodesToReplace.push(node);
-// 		}
-// 	}
-
-// 	// Ersetzungen durchführen
-// 	nodesToReplace.forEach(textNode => {
-// 		const parent = textNode.parentNode;
-// 		// Vermeide doppelte Ersetzungen
-// 		if (parent.classList && parent.classList.contains("csa-filter")) return;
-
-// 		// Span-Container für gemischten HTML-Content
-// 		const wrapper = document.createElement("span");
-// 		// Ersetze jeden Treffer durch ein ⚠️-Icon mit Tooltip
-// 		wrapper.innerHTML = textNode.nodeValue.replace(pattern, match => {
-// 			return `<span class="csa-filter" title="${match}">⚠️</span>`;
-// 		});
-// 		parent.replaceChild(wrapper, textNode);
-// 	});
-// }
-
-// // Erster Durchlauf beim Laden
-// scanAndReplace();
-
-// // Bonus: Beobachter für dynamisch nachgeladene Inhalte (z.B. AJAX)
-// const observer = new MutationObserver(mutations => {
-// 	mutations.forEach(mutation => {
-// 		mutation.addedNodes.forEach(node => {
-// 			if (node.nodeType === Node.ELEMENT_NODE) {
-// 				scanAndReplace(node);
-// 			}
-// 		});
-// 	});
-// });
-// observer.observe(document.body, { childList: true, subtree: true });
-
-// ===== contentScript.js =====
-// Holt dynamisch die Blacklist via background.js und filtert Seiteninhalt
-
-chrome.runtime.sendMessage({ action: 'fetchBlacklist' }, response => {
-	// Fallback zu statischer Liste, wenn API fehlschlägt
-	const staticList = ["kill", "blood", "drugs", "violence", "sex"];
-	const blacklist = response.words || staticList;
-	const pattern = new RegExp(`\\b(${blacklist.join('|')})\\b`, 'gi');
-
-	// CSS für Markierung injizieren
-	const style = document.createElement('style');
-	style.textContent = `
-	.csa-filter {
-	  background-color: rgba(255, 255, 0, 0.4);
-	  border-radius: 2px;
-	  cursor: help;
-	}
-	`;
-	document.head.appendChild(style);
-
-	// Funktion zum Scannen & Ersetzen
-	function scanAndReplace(root = document.body) {
-		const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null, false);
-		let node;
-		const nodes = [];
-
-		while ((node = walker.nextNode())) {
-			if (pattern.test(node.nodeValue)) nodes.push(node);
-		}
-
-		nodes.forEach(textNode => {
-			const parent = textNode.parentNode;
-			if (parent.classList?.contains('csa-filter')) return;
-			const span = document.createElement('span');
-			span.innerHTML = textNode.nodeValue.replace(pattern, match =>
-				`<span class="csa-filter" title="${match}">⚠️</span>`
-			);
-			parent.replaceChild(span, textNode);
+	try {
+		const response = await fetch('https://api.openai.com/v1/moderations', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				'Authorization': `Bearer ${API_KEY}`,
+			},
+			body: JSON.stringify({
+				model: "omni-moderation-latest",
+				input: text
+			}),
 		});
+
+		const data = await response.json();
+
+		if (data.results?.[0]?.flagged) {
+			console.log('⚠️ Page content flagged by moderation API.');
+
+			document.body.style.filter = 'blur(8px)';
+			document.body.style.pointerEvents = 'none';
+
+			const overlay = document.createElement('div');
+			overlay.textContent = 'This content is restricted due to policy violations.';
+			Object.assign(overlay.style, {
+				position: 'fixed',
+				top: '50%',
+				left: '50%',
+				transform: 'translate(-50%, -50%)',
+				backgroundColor: 'rgba(0,0,0,0.8)',
+				color: 'white',
+				fontSize: '24px',
+				padding: '20px',
+				borderRadius: '8px',
+				zIndex: 9999,
+				pointerEvents: 'auto',
+			});
+			document.body.appendChild(overlay);
+		} else {
+			console.log('✅ Page is clean.');
+		}
+	} catch (err) {
+		console.error('❌ Moderation API error:', err);
 	}
-
-	// Erster Scan + Observer für dynamische Inhalte
-	scanAndReplace();
-	new MutationObserver(muts => muts.forEach(m =>
-		Array.from(m.addedNodes)
-			.filter(n => n.nodeType === 1)
-			.forEach(n => scanAndReplace(n))
-	)).observe(document.body, { childList: true, subtree: true });
-});
-
+})();
