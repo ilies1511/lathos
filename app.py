@@ -24,7 +24,7 @@ def check_url_content():
         response.raise_for_status()
 
         soup = BeautifulSoup(response.text, "html.parser")
-        text = soup.get_text(separator=" ", strip=True)[:3000]
+        text = soup.get_text(separator=" ", strip=True)[:12000]
 
         moderation_resp = client.moderations.create(input=text)
         result = moderation_resp.results[0]
