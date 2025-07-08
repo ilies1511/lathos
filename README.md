@@ -36,6 +36,6 @@ curl -X POST http://127.0.0.1:5000/check \
   ```
 
 Postman Test
-Use: POST method <\br>
-URL : 127.0.0.1:5000/check <\br>
-JSON : {"url": "http://porn.com"} <\br>
+Use: POST method <br/>
+URL : 127.0.0.1:5000/check <br/>
+JSON : {"url": "http://porn.com"} <br/>
