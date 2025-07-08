@@ -1,44 +1,63 @@
-// Function to blur images
-const blurImages = () => {
+// Function to blur images based on the provided array of URLs
+const blurImages = (imageUrlsToBlur) => {
 	const imgs = document.getElementsByTagName("img");
 	for (let img of imgs) {
-	  img.style.filter = "blur(10px)";  // Apply a 10px blur to all images
+	  // Check if the image's URL is in the array provided by the team
+	  if (imageUrlsToBlur.includes(img.src)) {
+		img.style.filter = "blur(10px)";  // Apply blur to the specific image
+	  }
 	}
   };
 
-  // Function to disable and hide video content completely
-  const blockVideos = () => {
+  // Function to disable videos based on the provided array of URLs
+  const disableVideos = (videoUrlsToDisable) => {
 	const videos = document.getElementsByTagName("video");
 	for (let video of videos) {
-	  // Create a placeholder to cover the video
-	  const placeholder = document.createElement("div");
-	  placeholder.style.width = `${video.offsetWidth}px`;  // Match the video's width
-	  placeholder.style.height = `${video.offsetHeight}px`;  // Match the video's height
-	  placeholder.style.backgroundColor = "gray";  // Set a color or image for the placeholder
-	  placeholder.style.pointerEvents = "none";  // Ensure the placeholder doesn't interact with the user
-	  placeholder.style.position = "absolute";  // To ensure it covers the video exactly
-	  placeholder.style.top = `${video.offsetTop}px`;
-	  placeholder.style.left = `${video.offsetLeft}px`;
+	  // Check if the video's URL is in the array provided by the team
+	  if (videoUrlsToDisable.includes(video.src)) {
+		// Mute and pause the video
+		video.muted = true;
+		video.pause();
 
-	  // Replace the video element with the placeholder
-	  video.parentNode.replaceChild(placeholder, video);
+		// Create a placeholder to replace the video
+		const placeholder = document.createElement("div");
+		placeholder.style.width = `${video.offsetWidth}px`;  // Match the video's width
+		placeholder.style.height = `${video.offsetHeight}px`;  // Match the video's height
+		placeholder.style.backgroundColor = "gray";  // Placeholder color
+		placeholder.style.pointerEvents = "none";  // Ensure no interaction
+		placeholder.style.position = "absolute";  // To cover the video exactly
+		placeholder.style.top = `${video.offsetTop}px`;
+		placeholder.style.left = `${video.offsetLeft}px`;
 
-	  // Disable the video controls if it's a video iframe or part of a web player
-	  video.style.visibility = "hidden";  // Hide the video content immediately
-	  video.style.height = "0px";  // Optional: Set height to 0px to remove any space taken by the video
-	  video.style.width = "0px";  // Optional: Set width to 0px to remove any space taken by the video
-	  video.style.pointerEvents = "none";  // Disable interaction with the video (can't click to play)
+		// Replace the video element with the placeholder
+		video.parentNode.replaceChild(placeholder, video);
+
+		// Remove video controls and prevent interactions
+		video.removeAttribute("controls");
+		video.style.pointerEvents = "none";  // Disable interaction with the video
+	  }
 	}
   };
 
-  // Initial execution
-  blurImages();
-  blockVideos();
+  // Example of how the team can call this with their arrays
+  const imageUrlsToBlur = [
+	"https://example.com/image1.jpg",
+	"https://example.com/image2.jpg"
+  ];
 
-  // Observe DOM for new images and videos (e.g., dynamically loaded content)
+  const videoUrlsToDisable = [
+	"https://example.com/video1.mp4",
+	"https://example.com/video2.mp4"
+  ];
+
+  // Initial execution (pass the arrays of URLs to blur or disable content)
+  blurImages(imageUrlsToBlur);
+  disableVideos(videoUrlsToDisable);
+
+  // Observe DOM for new content (e.g., dynamically loaded images/videos)
   const observer = new MutationObserver(() => {
-	blurImages();
-	blockVideos();
+	blurImages(imageUrlsToBlur);
+	disableVideos(videoUrlsToDisable);
   });
 
   observer.observe(document.body, {
