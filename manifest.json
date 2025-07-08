@@ -1,0 +1,33 @@
+{
+	"manifest_version": 3,
+	"name": "ChildSafeNow",
+	"version": "0.1.0",
+	"description": "Filtert problematische Begriffe (Gewalt, Drogen, etc.) live auf jeder Seite für kindgerechtes Surfen.",
+	"icons": {
+		"16": "icons/icon16.png",
+		"48": "icons/icon48.png",
+		"128": "icons/icon128.png"
+	},
+	"permissions": [
+		"storage"
+	],
+	"content_scripts": [
+		{
+			"matches": [
+				"<all_urls>"
+			],
+			"js": [
+				"contentScript.js"
+			],
+			"run_at": "document_end"
+		}
+	],
+	"action": {
+		"default_icon": {
+			"16": "icons/icon16.png",
+			"48": "icons/icon48.png"
+		},
+		"default_title": "ChildSafeNow"
+	},
+	"options_page": "options.html"
+}
