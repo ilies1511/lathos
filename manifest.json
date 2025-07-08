@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "Blur F Word",
+  "version": "1.0",
+  "description": "Blurs the word 'fuck' on any webpage.",
+  "permissions": ["scripting"],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "css": ["style.css"],
+      "run_at": "document_idle"
+    }
+  ]
+}
