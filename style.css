@@ -1,0 +1,8 @@
+.blur-word {
+  filter: blur(5px);
+  cursor: pointer;
+}
+
+/* .blur-word:hover {
+  filter: none;
+} */
