@@ -1,8 +1,8 @@
 {
 	"manifest_version": 3,
-	"name": "ChildSafeNow",
+	"name": "ChildSafeNow_Thalia",
 	"version": "0.1.0",
-	"description": "Filtert problematische Begriffe (Gewalt, Drogen, etc.) live auf jeder Seite für kindgerechtes Surfen.",
+	"description": "Filtert problematische Begriffe live auf jeder Seite für kindgerechtes Surfen (mit OpenAI API)",
 	"icons": {
 		"16": "icons/icon16.png",
 		"48": "icons/icon48.png",
@@ -11,13 +11,19 @@
 	"permissions": [
 		"storage"
 	],
+	"host_permissions": [
+		"https://api.openai.com/*"
+	],
+	"background": {
+		"service_worker": "background.bundle.js"
+	},
 	"content_scripts": [
 		{
 			"matches": [
 				"<all_urls>"
 			],
 			"js": [
-				"contentScript.js"
+				"content.bundle.js"
 			],
 			"run_at": "document_end"
 		}
@@ -27,7 +33,6 @@
 			"16": "icons/icon16.png",
 			"48": "icons/icon48.png"
 		},
-		"default_title": "ChildSafeNow"
-	},
-	"options_page": "options.html"
+		"default_title": "ChildSafeNow_Thalia"
+	}
 }
