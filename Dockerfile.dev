@@ -1,0 +1,11 @@
+FROM node:22-alpine
+
+WORKDIR /app
+
+RUN apk update && apk add bash \
+	--no-cache make
+
+# RUN echo 'alias dev="npm run dev"' >> /etc/bash/bashrc
+RUN echo 'alias dev="npm run build"' >> /etc/bash/bashrc
+
+ENTRYPOINT [ "./init.sh" ]
