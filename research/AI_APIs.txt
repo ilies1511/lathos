@@ -1,0 +1,39 @@
+✅ TEXT Filtering APIs
+Provider				|	Features											|	Free Tier								|	Notes
+OpenAI Moderation API	|	Detects hate, violence, sexual content, self-harm	|	Free with OpenAI account				|	Fast, accurate, reliable
+Google Perspective API	|	Scores for toxicity, threats, insults, etc.			|	Free (requires API key)					|	Great for community-focused sites
+Hugging Face Models		|	Models like roberta-toxic, bert-offensive, etc.		|	Free via transformers or Inference API	|	Local or cloud-based use
+
+🔧 Use Case: Run extracted webpage text through these APIs to detect and block/blur offensive content.
+
+
+
+✅ IMAGE Filtering APIs
+Provider				|	Features										|	Free Tier							|	Notes
+DeepAI NSFW DetectionAPI|	Detects nudity/sexual content in images			|	Free (limited daily requests)		|	Simple REST API
+Sightengine				|	Detects nudity, weapons, drugs, gore			|	Free tier (1,000 API calls/month)	|	Flexible & customizable
+ModerateContent			|	Scores images from 0 (safe) to 100 (explicit)	|	Free with attribution				|	Good for basic filtering
+Hugging Face OpenNSFW	|	Local model (NSFW detection)					|	Free								|	Can run without internet using onnx or transformers
+
+🔧 Use Case: Extract image URLs or base64 images → send to these APIs → block/blur if score > threshold.
+
+
+
+✅ VIDEO Filtering (Indirect)
+There are no real-time, free video content moderation APIs, but here's how you can build it:
+
+Method				|	Tools														|	Notes
+Frame extraction	|	Use ffmpeg to grab frames from embedded or uploaded videos	|	Easy to integrate in Python
+Analyze frames		|	Send extracted frames to image filtering APIs above			|	Detect inappropriate content via sampled frames
+Heuristic rule		|	Block/flag video if >X% of frames are flagged				|	Simple MVP strategy
+
+⚠️ This works best for preloaded or uploaded videos, not YouTube streams unless embedded with access.
+
+
+✅ AUDIO Filtering (Optional/Advanced)
+Provider			|	Features									|	Free Tier						|	Notes
+OpenAI Whisper		|	Transcribes audio to text					|	Free (local model) or via API	|	Use transcription → pass to text moderation API
+AssemblyAI			|	Transcription with content safety detection	|	Free with sign-up (5 hrs/month)	|	Includes keyword spotting
+Deepgram			|	Fast speech-to-text with profanity tagging	|	Free 200 mins/month				|	Developer-friendly API
+
+🔧 Use Case: Convert speech → text → run through text filters like OpenAI Moderation API.
