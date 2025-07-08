@@ -1,0 +1,40 @@
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
+from webdriver_manager.chrome import ChromeDriverManager
+import openai
+import time
+
+# Set your OpenAI API Key
+openai.api_key = "sk-..."  # <-- Replace with your actual key
+
+# Function to extract text from HTTPS URL using Selenium
+def extract_text_from_https(url):
+    chrome_options = Options()
+    chrome_options.add_argument("--headless")  # Run in background
+    chrome_options.add_argument("--disable-gpu")
+
+    # Start Chrome with WebDriver Manager
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
+
+    driver.get(url)
+    time.sleep(3)  # Wait for the page to load JS content
+
+    # Get visible text
+    text = driver.find_element("tag name", "body").text
+    driver.quit()
+    return text[:2000]  # Limit for safety (OpenAI supports ~10,000 tokens)
+
+# Function to check moderation
+def check_moderation(text):
+    response = openai.Moderation.create(input=text)
+    result = response["results"][0]
+    print("\n🔍 Flagged:", result["flagged"])
+    print("🚨 Categories:", [k for k, v in result["categories"].items() if v])
+    print("📊 Scores:", result["category_scores"])
+
+# Example usage
+url = "https://example.com"  # Change to any URL
+text = extract_text_from_https(url)
+print("Extracted text:", text[:300], "...\n")  # Show a snippet
+check_moderation(text)

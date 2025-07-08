@@ -1,0 +1,28 @@
+pip install playwright
+playwright install
+
+from playwright.sync_api import sync_playwright
+import openai
+
+# Your API key here
+openai.api_key = "sk-..."
+
+def extract_text_from_https(url):
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        page = browser.new_page()
+        page.goto(url)
+        text = page.inner_text("body")
+        browser.close()
+        return text[:2000]  # Optional: limit text size
+
+def check_moderation(text):
+    response = openai.Moderation.create(input=text)
+    result = response["results"][0]
+    print("Flagged:", result["flagged"])
+    print("Categories:", result["categories"])
+
+# Example usage
+url = "https://example.com"
+text = extract_text_from_https(url)
+check_moderation(text)
