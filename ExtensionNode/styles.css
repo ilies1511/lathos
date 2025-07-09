@@ -1,0 +1,5 @@
+.blur-word {
+  filter: blur(6px);
+  background: rgba(0, 0, 0, 0.1);
+}
+

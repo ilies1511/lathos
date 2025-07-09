@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "Content Moderation Blur",
+  "version": "1.0",
+  "description": "Blurs sensitive content using OpenAI's Moderation API.",
+  "permissions": ["scripting", "activeTab"],
+  "host_permissions": ["<all_urls>"],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "css": ["styles.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "icons": {
+    "16": "icon.png",
+    "48": "icon.png",
+    "128": "icon.png"
+  }
+}
+
