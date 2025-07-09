@@ -25,12 +25,21 @@ async function checkImageElement(element) {
   try {
     const imageUrl = element.src || element.getAttribute('src');
     const alttext = element.alt || '';
-    if (moderateText(alttext)) {
-      // console.log('Image alt text flagged:', alttext);
-      return true;
+    if (alttext && alttext.length > 0) {
+      // console.log('Image alt text:', alttext);
+      if (moderateText(alttext)) {
+        // console.log('Image alt text flagged:', alttext);
+        return true;
+      }
+    }
+    
+    if (imageUrl.contains('.svg')) {
+      return false; // Skip SVG images  
     }
     // console.log('Checking image URL:', imageUrl);
-
+    if (imageUrl.startsWith('data:image/png;base64')) {
+      return false; // Skip data URLs
+    }
     const response = await fetch('http://127.0.0.1:5000/moderate/image', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

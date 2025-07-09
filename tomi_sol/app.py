@@ -56,8 +56,8 @@ async def moderate_image(request: ImageRequest):
             input=[{"type": "image_url", "image_url": {"url": str(request.image_url)}}]
         )
         flagged = response.results[0].flagged
-        # if flagged:
-        #     print("Flagged IMAGE detected: ", response)
+        if flagged:
+            print("Flagged IMAGE detected: ", response)
 
         print(f"IMAGE: {flagged}")
         return flagged
