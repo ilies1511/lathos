@@ -16,7 +16,11 @@ async function moderateText(text) {
 }
 
 async function checkTextElement(element) {
-  const text = element.innerText || '';
+  const text = element.innerText.trim() || '';
+  console.log('********* Checking text:', text);
+  if (!text || text.length === 0) {
+    return false; // Skip empty elements
+  }
   return await moderateText(text);
 }
 
@@ -26,19 +30,23 @@ async function checkImageElement(element) {
     const imageUrl = element.src || element.getAttribute('src');
     const alttext = element.alt || '';
     if (alttext && alttext.length > 0) {
-      // console.log('Image alt text:', alttext);
-      if (moderateText(alttext)) {
-        // console.log('Image alt text flagged:', alttext);
+      const altTextFlagged = moderateText(alttext);
+      // const altTextFlagged = await moderateText(alttext);
+      if (altTextFlagged) {
         return true;
       }
     }
-    
-    if (imageUrl.contains('.svg')) {
-      return false; // Skip SVG images  
+
+    if (typeof imageUrl === 'string' && imageUrl.includes('.svg')) {
+      return false; // Skip SVG images
     }
-    // console.log('Checking image URL:', imageUrl);
-    if (imageUrl.startsWith('data:image/png;base64')) {
+    if (typeof imageUrl === 'string' && imageUrl.startsWith('data:image/png;base64')) {
       return false; // Skip data URLs
+    }
+
+    let finalUrl = imageUrl;
+    if (typeof imageUrl === 'string' && !imageUrl.startsWith('http') && !imageUrl.startsWith('data:')) {
+      finalUrl = new URL(imageUrl, window.location.href).href;
     }
     const response = await fetch('http://127.0.0.1:5000/moderate/image', {
       method: 'POST',
@@ -55,12 +63,13 @@ async function checkImageElement(element) {
   }
 }
 
+
 async function blurIncorrectParts(root) {
-  const blockTags = ['P', 'DIV', 'LI', 'SECTION', 'ARTICLE', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6'];
+  const blockTags = ['P', 'A', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6'];
   const allElements = root.querySelectorAll('*');
 
   let checkedCount = 0;
-  for (let i = 0; i < allElements.length && checkedCount < 40; i++) {
+  for (let i = 0; i < allElements.length && checkedCount < 140; i++) {
     const el = allElements[i];
     let shouldBlur = false;
 
@@ -71,11 +80,19 @@ async function blurIncorrectParts(root) {
       //   el.classList.add('blur-content');
       // }
       checkedCount++;
+    } else if (blockTags.includes(el.tagName)) {
+
+      const text = el.textContent.trim();
+  
+      // Check if text is empty after trimming
+      if (text) {
+        console.log(`-------- --- - - - - Checking text element: ${el.tagName}`);
+        console.log(`Text: ${text}`);
+      }
+      shouldBlur = await checkTextElement(el);
+      console.log(`Element: ${el.tagName}, shouldBlur: ${shouldBlur}`);
+      checkedCount++;
     }
-    // } else if (blockTags.includes(el.tagName)) {
-    //   shouldBlur = await checkTextElement(el);
-    //   checkedCount++;
-    // }
 
     if (shouldBlur) {
       el.classList.add('blur-content');
